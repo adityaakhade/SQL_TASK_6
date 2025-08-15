@@ -1,0 +1,40 @@
+--1️⃣ Customers who ordered the most expensive product
+
+SELECT c.FIRST_NAME || ' ' || c.LAST_NAME AS customer_name
+FROM CUSTOMERS c
+WHERE c.CUSTOMER_ID IN (
+    SELECT o.CUSTOMER_ID
+    FROM ORDERS o
+    JOIN ORDER_ITEMS oi ON o.ORDER_ID = oi.ORDER_ID
+    WHERE oi.PRODUCT_ID = (
+        SELECT PRODUCT_ID
+        FROM PRODUCTS
+        ORDER BY PRICE DESC
+        LIMIT 1
+    )
+);
+
+--2️⃣ Products ordered more than the average quantity
+
+SELECT PRODUCT_NAME
+FROM PRODUCTS
+WHERE PRODUCT_ID IN (
+    SELECT PRODUCT_ID
+    FROM ORDER_ITEMS
+    GROUP BY PRODUCT_ID
+    HAVING SUM(QUANTITY) > (
+        SELECT AVG(QUANTITY) FROM ORDER_ITEMS
+    )
+);
+
+--3️⃣ Customers who spent more than 2000
+SELECT c.FIRST_NAME || ' ' || c.LAST_NAME AS customer_name
+FROM CUSTOMERS c
+WHERE c.CUSTOMER_ID IN (
+    SELECT o.CUSTOMER_ID
+    FROM ORDERS o
+    JOIN ORDER_ITEMS oi ON o.ORDER_ID = oi.ORDER_ID
+    JOIN PRODUCTS p ON oi.PRODUCT_ID = p.PRODUCT_ID
+    GROUP BY o.CUSTOMER_ID
+    HAVING SUM(oi.QUANTITY * p.PRICE) > 2000
+);
